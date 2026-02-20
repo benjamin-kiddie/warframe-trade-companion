@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum TransactionType {
+  PURCHASE
+  MARKET_PURCHASE
+  TRADE_BUY
+  TRADE_SELL
+}
+
+enum ItemType {
+  WARFRAME_PART
+  WEAPON_PART
+  LANDING_CRAFT_PART
+  COMPANION_PART
+  ARCHWING_PART
+  MOD
+  RIVEN
+  REACTOR
+  CATALYST
+  ARCANE_ADAPTER
+  EXILUS_ADAPTER
+  WARFRAME_SLOT
+  WEAPON_SLOT
+  ARCHWING_WEAPON_SLOT
+  COMPANION_SLOT
+  VEHICLE_SLOT
+  COSMETIC
+  PLATINUM
+}
+
+model Transaction {
+  id                String            @id @default(cuid())
+  date              DateTime          @default(now())
+  transactionType   TransactionType
+  itemType          ItemType
+  itemName          String
+  slug              String?           // warframe.market slug ID
+  price             Int
+  notes             String?
+
+  @@map("transactions")
+}
+
+model WishlistItem {
+  id                String            @id @default(cuid())
+  rank              Int               // index in the wishlist
+  slug              String            // warframe.market slug ID
+  name              String
+  setId             String
+  alertPrice        Int?              // alerts trigger at/below this price
+  currentPrice      Int?
+
+  set               ItemSet?          @relation(fields: [setId], references: [id])
+
+  @@map("wishlist_items")
+}
+
+model ItemSet {
+  id                String            @id @default(cuid())
+  name              String            // e.g. "Calibran Prime Set"
+
+  items             WishlistItem[]    // relation to items in this set
+
+  @@map("item_sets")
+}
