@@ -33,6 +33,12 @@ export default function ItemAutocomplete({
 
   const displayValue = currentValue.itemName || query;
 
+  // Keep local query text in sync when the form resets itemName out from
+  // under us (e.g. on submit/cancel), since that doesn't fire a blur event.
+  useEffect(() => {
+    setQuery(currentValue.itemName);
+  }, [currentValue.itemName]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       if (query.trim() && !currentValue.itemName) {

@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Warframe Trade Companion
 
-## Getting Started
+A personal companion app for tracking Warframe trading activity: platinum
+earned and spent, transaction history, and (soon) a price-alert wishlist.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Accounting** — log trades (buy/sell), market purchases, and platinum
+  purchases; see bought vs. traded platinum balances at a glance; browse,
+  edit, and delete paginated transaction history.
+- **Item search** — item names autocomplete against the
+  [warframe.market](https://warframe.market) catalog.
+- **Wishlist** — coming soon.
+
+## Tech stack
+
+- [Next.js](https://nextjs.org) 16 (App Router, Turbopack) + React 19 +
+  TypeScript
+- [Tailwind CSS](https://tailwindcss.com) v4
+- [Prisma](https://www.prisma.io) 7 ORM over SQLite (via the
+  `better-sqlite3` adapter)
+- Docker for packaging/deployment
+
+## Running it (Docker, no source needed)
+
+This pulls the published image and persists its SQLite database in a Docker
+volume, so it survives future updates.
+
+1. Download `docker-compose.deploy.yml` from this repo:
+   ```
+   curl -O https://raw.githubusercontent.com/benjamin-kiddie/WarframeTradeCompanion/main/docker-compose.deploy.yml
+   ```
+2. In the same folder, run:
+   ```
+   docker compose -f docker-compose.deploy.yml pull
+   docker compose -f docker-compose.deploy.yml up -d
+   ```
+3. Open [http://localhost:3000](http://localhost:3000).
+
+To update later, re-run those same two commands — the `db-data` volume is
+untouched by pulling a new image.
+
+## Building the image yourself
+
+If you're working on the app and want to build/push the image rather than
+just run the published one, use `docker-compose.yml` (which builds from the
+local `Dockerfile`) instead:
+
+```
+docker compose build
+docker compose push   # publishes benjaminkiddie/warframe-trade-companion:latest
+docker compose up -d
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Local development (without Docker)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Install dependencies:
+   ```
+   npm install
+   ```
+2. Copy `.env.example` to `.env` and adjust as needed:
+   ```
+   cp .env.example .env
+   ```
+3. Set up the database:
+   ```
+   npx prisma migrate dev
+   ```
+4. Start the dev server:
+   ```
+   npm run dev
+   ```
+5. Open [http://localhost:3000](http://localhost:3000).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Other scripts
 
-## Learn More
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the dev server (Turbopack) |
+| `npm run build` | Production build |
+| `npm run start` | Start a production build |
+| `npm run lint` | Run ESLint |
 
-To learn more about Next.js, take a look at the following resources:
+## Environment variables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Variable | Description | Example |
+| --- | --- | --- |
+| `DATABASE_URL` | SQLite connection string used by Prisma | `file:./data/database.db` |
+| `NODE_ENV` | Node environment | `production` |
+| `PORT` | Port the server listens on | `3000` |
+| `HOSTNAME` | Host the server binds to | `0.0.0.0` |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Data persistence
 
-## Deploy on Vercel
+The SQLite database lives at whatever path `DATABASE_URL` points to. In
+Docker, this is `/app/data/database.db`, backed by the named volume
+`db-data` — it's independent of the image, so pulling/rebuilding a new
+version never touches existing data. Schema changes are applied on startup
+via `prisma migrate deploy`, which only runs forward migrations and never
+resets data.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+[MIT](LICENSE)

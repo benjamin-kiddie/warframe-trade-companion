@@ -1,23 +1,19 @@
+# Compose file for machines that only run the published image (no source
+# checkout needed). Deliberately has no `build:` key so Compose can never
+# fall back to building from a local Dockerfile.
 services:
-  warframe-trade-companion-dev:
-    build:
-      context: .
-      target: deps # Only build to the deps stage for development
-    container_name: warframe-trade-companion-dev
+  warframe-trade-companion:
+    image: benjaminkiddie/warframe-trade-companion:latest
+    container_name: warframe-trade-companion
     restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - DATABASE_URL=file:./data/database.db
     volumes:
       # Mount SQLite database directory for persistence
-      - db-data-dev:/app/data
-    working_dir: /app
-    command: >
-      sh -c "npx prisma generate &&
-             npx prisma migrate dev &&
-             npm run dev"
+      - db-data:/app/data
     healthcheck:
       test:
         [
@@ -26,7 +22,7 @@ services:
           "--no-verbose",
           "--tries=1",
           "--spider",
-          "http://localhost:3000 || exit 1",
+          "http://localhost:3000/api/health || exit 1",
         ]
       interval: 30s
       timeout: 10s
@@ -34,5 +30,5 @@ services:
       start_period: 40s
 
 volumes:
-  db-data-dev:
+  db-data:
     driver: local

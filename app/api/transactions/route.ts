@@ -15,15 +15,21 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = (page - 1) * limit;
     const sortBy = searchParams.get("sortBy") || "date";
-    const sortOrder = searchParams.get("sortOrder") || "desc";
+    const sortOrder = (searchParams.get("sortOrder") || "desc") as
+      | "asc"
+      | "desc";
+
+    // CUID embeds a timestamp+counter prefix, so sort by ID on same day to break ties
+    const orderBy =
+      sortBy === "id"
+        ? { id: sortOrder }
+        : [{ [sortBy]: sortOrder }, { id: sortOrder }];
 
     const [transactions, totalCount] = await Promise.all([
       prisma.transaction.findMany({
         skip: offset,
         take: limit,
-        orderBy: {
-          [sortBy]: sortOrder as "asc" | "desc",
-        },
+        orderBy,
       }),
       prisma.transaction.count(),
     ]);

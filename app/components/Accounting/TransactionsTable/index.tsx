@@ -1,6 +1,7 @@
 "use client";
 
 import { Transaction, TransactionType, Pagination } from "@/app/lib/types";
+import RowActionsMenu from "@/app/components/Accounting/TransactionsTable/RowActionsMenu";
 
 type Props = {
   /** List of transactions. */
@@ -11,8 +12,12 @@ type Props = {
   pagination: Pagination | null;
   /** Callback to change page. */
   onPageChange: (page: number) => void;
-  /** Callback to open the form dialog. */
-  setDialogOpen: (dialogOpen: boolean) => void;
+  /** Callback to open the form dialog for adding a new transaction. */
+  onAddClick: () => void;
+  /** Callback to edit a transaction. */
+  onEdit: (transaction: Transaction) => void;
+  /** Callback to delete a transaction. */
+  onDelete: (id: string) => void;
 };
 
 /** Table showing recent transactions. */
@@ -21,7 +26,9 @@ export default function TransactionsTable({
   loading,
   pagination,
   onPageChange,
-  setDialogOpen,
+  onAddClick,
+  onEdit,
+  onDelete,
 }: Props) {
   /**
    * Pick color for different transaction types.
@@ -98,44 +105,47 @@ export default function TransactionsTable({
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-800 rounded-lg border overflow-hidden">
-      <div className="px-6 py-4 border-b flex justify-between items-center">
+    <div className="bg-white dark:bg-zinc-800 rounded-lg border overflow-hidden h-full flex flex-col">
+      <div className="px-6 py-4 border-b flex justify-between items-center shrink-0">
         <h2 className="text-lg font-semibold text-black dark:text-white">
           Recent Transactions
         </h2>
         <button
-          onClick={() => setDialogOpen(true)}
+          onClick={onAddClick}
           className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
         >
           +
         </button>
       </div>
       {!loading && transactions.length === 0 ? (
-        <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+        <div className="flex-1 flex items-center justify-center p-6 text-center text-gray-500 dark:text-gray-400">
           No transactions found. Start by adding your first transaction!
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead className="bg-gray-50 dark:bg-zinc-700">
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto">
+          <table className="min-w-full table-fixed">
+            <thead className="bg-gray-50 dark:bg-zinc-700 sticky top-0 z-10">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="w-[10%] px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Date
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="w-[11%] px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Transaction Type
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="w-[12%] px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Item Type
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="w-[26%] px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Item
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="w-[8%] px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Price
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="w-[25%] px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Notes
+                </th>
+                <th className="w-[8%] px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -160,6 +170,9 @@ export default function TransactionsTable({
                       </td>
                       <td className="px-6 py-4">
                         <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4 ml-auto"></div>
                       </td>
                     </tr>
                   ))
@@ -195,6 +208,13 @@ export default function TransactionsTable({
                       <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                         {transaction.notes || "-"}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <RowActionsMenu
+                          transaction={transaction}
+                          onEdit={onEdit}
+                          onDelete={onDelete}
+                        />
+                      </td>
                     </tr>
                   ))}
             </tbody>
@@ -202,7 +222,7 @@ export default function TransactionsTable({
         </div>
       )}
       {pagination && !loading && (
-        <div className="px-6 py-4 border-t bg-gray-50 dark:bg-zinc-700 flex items-center justify-between">
+        <div className="px-6 py-4 border-t bg-gray-50 dark:bg-zinc-700 flex items-center justify-between shrink-0">
           <div className="text-sm text-gray-700 dark:text-gray-300">
             Showing{" "}
             {Math.min(

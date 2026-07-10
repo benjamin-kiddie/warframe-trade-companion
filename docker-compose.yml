@@ -1,6 +1,7 @@
 services:
   warframe-trade-companion:
     build: .
+    image: benjaminkiddie/warframe-trade-companion:latest
     container_name: warframe-trade-companion
     restart: unless-stopped
     ports:

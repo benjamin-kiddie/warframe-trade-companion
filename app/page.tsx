@@ -28,10 +28,10 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
+    <div className="h-dvh overflow-hidden flex flex-col bg-zinc-50 font-sans dark:bg-black">
       <Toaster />
-      <header className="bg-white dark:bg-zinc-800 border-b border-gray-200 dark:border-zinc-700 fixed top-0 left-0 right-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+      <header className="shrink-0 bg-white dark:bg-zinc-800 border-b border-gray-200 dark:border-zinc-700">
+        <div className="max-w-[1800px] mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-semibold text-black dark:text-zinc-50">
               Warframe Trading Companion
@@ -61,7 +61,7 @@ export default function Home() {
           </div>
         </div>
       </header>
-      <main className="max-w-7xl mx-auto px-4 py-8 pt-24">
+      <main className="flex-1 min-h-0 max-w-[1800px] w-full mx-auto px-6 py-6 overflow-hidden">
         {renderContent()}
       </main>
     </div>

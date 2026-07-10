@@ -3,11 +3,15 @@ import ItemAutocomplete from "@/app/components/Inputs/ItemAutocomplete";
 import {
   TransactionType,
   ItemType,
+  Transaction,
   TransactionFormData as TransactionFormType,
 } from "@/app/lib/types";
 import NumberInput from "@/app/components/Inputs/NumberInput";
+import Select from "@/app/components/Inputs/Select";
 
 type Props = {
+  /** Transaction being edited, or null/undefined when adding a new one. */
+  editingTransaction?: Transaction | null;
   /** Submission callback. */
   onSubmit: (data: TransactionFormType) => void;
   /** Cancel callback. */
@@ -15,18 +19,44 @@ type Props = {
 };
 
 /**
- * Modal form for adding a new transaction.
+ * Modal form for adding a new transaction, or editing an existing one.
+ * The date a transaction occurred on cannot be edited once created.
  */
-export default function TransactionForm({ onSubmit, onCancel }: Props) {
-  const [formData, setFormData] = useState<TransactionFormType>({
-    date: new Date().toISOString().split("T")[0],
-    transactionType: TransactionType.TRADE_SELL,
-    itemType: ItemType.WARFRAME_PART,
-    itemName: "",
-    slug: null,
-    price: 0,
-    notes: null,
-  });
+export default function TransactionForm({
+  editingTransaction,
+  onSubmit,
+  onCancel,
+}: Props) {
+  const isEditing = editingTransaction != null;
+
+  /** Build form state from the transaction being edited, or blank defaults. */
+  const buildInitialFormData = (): TransactionFormType => {
+    if (editingTransaction) {
+      return {
+        date: new Date(editingTransaction.date).toISOString().split("T")[0],
+        transactionType: editingTransaction.transactionType,
+        itemType: editingTransaction.itemType,
+        itemName: editingTransaction.itemName,
+        slug: editingTransaction.slug,
+        price: editingTransaction.price,
+        notes: editingTransaction.notes,
+      };
+    }
+
+    return {
+      date: new Date().toISOString().split("T")[0],
+      transactionType: TransactionType.TRADE_SELL,
+      itemType: ItemType.WARFRAME_PART,
+      itemName: "",
+      slug: null,
+      price: 0,
+      notes: null,
+    };
+  };
+
+  const [formData, setFormData] = useState<TransactionFormType>(
+    buildInitialFormData,
+  );
 
   /** Value-label pairs for transaction types. */
   const transactionTypeOptions = [
@@ -38,13 +68,13 @@ export default function TransactionForm({ onSubmit, onCancel }: Props) {
 
   /** Value-label pairs for traded item types. */
   const tradeItemTypeOptions = [
+    { value: ItemType.MOD, label: "Mod" },
+    { value: ItemType.RIVEN, label: "Riven" },
     { value: ItemType.WARFRAME_PART, label: "Warframe Part" },
     { value: ItemType.WEAPON_PART, label: "Weapon Part" },
     { value: ItemType.LANDING_CRAFT_PART, label: "Landing Craft Part" },
     { value: ItemType.COMPANION_PART, label: "Companion Part" },
     { value: ItemType.ARCHWING_PART, label: "Archwing Part" },
-    { value: ItemType.MOD, label: "Mod" },
-    { value: ItemType.RIVEN, label: "Riven" },
   ];
 
   /** Value-label pairs for purchased item types (only Platinum). */
@@ -56,15 +86,15 @@ export default function TransactionForm({ onSubmit, onCancel }: Props) {
   const marketPurchaseItemTypeOptions = [
     { value: ItemType.REACTOR, label: "Reactor" },
     { value: ItemType.CATALYST, label: "Catalyst" },
-    { value: ItemType.ARCANE_ADAPTER, label: "Arcane Adapter" },
-    { value: ItemType.EXILUS_ADAPTER, label: "Exilus Adapter" },
     { value: ItemType.WARFRAME_SLOT, label: "Warframe Slot" },
     { value: ItemType.WEAPON_SLOT, label: "Weapon Slot" },
     { value: ItemType.ARCHWING_WEAPON_SLOT, label: "Archwing Weapon Slot" },
-    { value: ItemType.COMPANION_SLOT, label: "Companion Slot" },
     { value: ItemType.VEHICLE_SLOT, label: "Vehicle Slot" },
-    { value: ItemType.COSMETIC, label: "Cosmetic" },
+    { value: ItemType.COMPANION_SLOT, label: "Companion Slot" },
+    { value: ItemType.ARCANE_ADAPTER, label: "Arcane Adapter" },
+    { value: ItemType.EXILUS_ADAPTER, label: "Exilus Adapter" },
     { value: ItemType.MOD, label: "Mod" },
+    { value: ItemType.COSMETIC, label: "Cosmetic" },
   ];
 
   /** Autofill item name for certain item types. */
@@ -176,15 +206,7 @@ export default function TransactionForm({ onSubmit, onCancel }: Props) {
 
   /** Reset form to initial state. */
   const resetForm = () => {
-    setFormData({
-      date: new Date().toISOString().split("T")[0],
-      transactionType: TransactionType.TRADE_SELL,
-      itemType: ItemType.WARFRAME_PART,
-      itemName: "",
-      slug: null,
-      price: 0,
-      notes: null,
-    });
+    setFormData(buildInitialFormData());
   };
 
   /** Handle form submission. */
@@ -203,7 +225,7 @@ export default function TransactionForm({ onSubmit, onCancel }: Props) {
   return (
     <>
       <h3 className="text-lg font-semibold text-black dark:text-white mb-6">
-        Add Transaction
+        {isEditing ? "Edit Transaction" : "Add Transaction"}
       </h3>
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
@@ -217,7 +239,12 @@ export default function TransactionForm({ onSubmit, onCancel }: Props) {
               onChange={(e) =>
                 setFormData({ ...formData, date: e.target.value })
               }
-              className="w-full px-3 py-2 pr-8 border border-gray-300 dark:border-zinc-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-700 dark:text-white [&::-webkit-calendar-picker-indicator]:dark:filter [&::-webkit-calendar-picker-indicator]:dark:invert"
+              disabled={isEditing}
+              className={`w-full px-3 py-2 pr-8 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 [&::-webkit-calendar-picker-indicator]:dark:filter [&::-webkit-calendar-picker-indicator]:dark:invert ${
+                isEditing
+                  ? "border-gray-300 dark:border-zinc-600 bg-gray-50 dark:bg-zinc-600 text-gray-500 dark:text-gray-400"
+                  : "border-gray-300 dark:border-zinc-600 dark:bg-zinc-700 dark:text-white"
+              }`}
               required={true}
             />
           </div>
@@ -225,37 +252,21 @@ export default function TransactionForm({ onSubmit, onCancel }: Props) {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Transaction Type
             </label>
-            <select
+            <Select
               value={formData.transactionType}
-              onChange={(e) =>
-                handleTransactionTypeChange(e.target.value as TransactionType)
-              }
-              className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-700 dark:text-white"
-              required
-            >
-              {transactionTypeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              options={transactionTypeOptions}
+              onChange={handleTransactionTypeChange}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Item Type
             </label>
-            <select
+            <Select
               value={formData.itemType}
-              onChange={(e) => handleItemTypeChange(e.target.value as ItemType)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-700 dark:text-white"
-              required
-            >
-              {getItemTypeOptions().map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              options={getItemTypeOptions()}
+              onChange={handleItemTypeChange}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -332,7 +343,7 @@ export default function TransactionForm({ onSubmit, onCancel }: Props) {
             type="submit"
             className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
           >
-            Add Transaction
+            {isEditing ? "Save Changes" : "Add Transaction"}
           </button>
         </div>
       </form>
