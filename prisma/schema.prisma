@@ -53,14 +53,13 @@ model Transaction {
 
 model WishlistItem {
   id                String            @id @default(cuid())
-  rank              Int               // index in the wishlist
   slug              String            // warframe.market slug ID
   name              String
-  setId             String
+  itemType          ItemType          // lets a "buy" prefill a Transaction
+  setId             String?           // null = standalone top-level entry
   alertPrice        Int?              // alerts trigger at/below this price
-  currentPrice      Int?
 
-  set               ItemSet?          @relation(fields: [setId], references: [id])
+  set               ItemSet?          @relation(fields: [setId], references: [id], onDelete: Cascade)
 
   @@map("wishlist_items")
 }
@@ -69,7 +68,7 @@ model ItemSet {
   id                String            @id @default(cuid())
   name              String            // e.g. "Calibran Prime Set"
 
-  items             WishlistItem[]    // relation to items in this set
+  items             WishlistItem[]    // relation to items in this set; query with orderBy: { id: "asc" } for stable order
 
   @@map("item_sets")
 }

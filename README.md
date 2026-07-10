@@ -1,16 +1,21 @@
 # Warframe Trade Companion
 
 A personal companion app for tracking Warframe trading activity: platinum
-earned and spent, transaction history, and (soon) a price-alert wishlist.
+earned and spent, transaction history, and a live-priced trading wishlist.
 
 ## Features
 
 - **Accounting** — log trades (buy/sell), market purchases, and platinum
   purchases; see bought vs. traded platinum balances at a glance; browse,
   edit, and delete paginated transaction history.
+- **Wishlist** — track items and sets you want to trade for, with live
+  current price and 30-day average pulled from warframe.market (colored to
+  flag good buy timing). Expand a set to see its items and their combined
+  price. Marking an item bought hands off to Accounting with the trade
+  pre-filled; discarding just removes it. Also shows total wishlist cost
+  and the traded balance you'd have left after buying everything on it.
 - **Item search** — item names autocomplete against the
   [warframe.market](https://warframe.market) catalog.
-- **Wishlist** — coming soon.
 
 ## Tech stack
 
@@ -66,6 +71,10 @@ docker compose up -d
    ```
    npx prisma migrate dev
    ```
+   > Requires Node 22+. Prisma's CLI currently fails on Node 20 with an
+   > `ERR_REQUIRE_ESM` error from one of its dependencies. This only
+   > affects Prisma CLI commands (`migrate`, `generate`, etc.) — the app
+   > itself runs fine on Node 20+.
 4. Start the dev server:
    ```
    npm run dev

@@ -2,26 +2,34 @@
 
 import { useState } from "react";
 import Accounting from "@/app/components/Accounting";
+import Wishlist from "@/app/components/Wishlist";
+import { WishlistBuyRequest } from "@/app/lib/types";
 import { Toaster } from "sonner";
 
 type TabType = "accounting" | "wishlist";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>("accounting");
+  const [pendingBuyRequest, setPendingBuyRequest] =
+    useState<WishlistBuyRequest | null>(null);
+
+  /** Hand a "bought" wishlist item off to the Accounting tab to log the trade. */
+  const handleRequestBuy = (request: WishlistBuyRequest) => {
+    setPendingBuyRequest(request);
+    setActiveTab("accounting");
+  };
 
   const renderContent = () => {
     switch (activeTab) {
       case "accounting":
-        return <Accounting />;
-      case "wishlist":
         return (
-          <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold mb-2">Wishlist</h2>
-              <p>Coming soon...</p>
-            </div>
-          </div>
+          <Accounting
+            pendingBuyRequest={pendingBuyRequest}
+            onBuyRequestHandled={() => setPendingBuyRequest(null)}
+          />
         );
+      case "wishlist":
+        return <Wishlist onRequestBuy={handleRequestBuy} />;
       default:
         return <Accounting />;
     }

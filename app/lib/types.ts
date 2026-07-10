@@ -62,3 +62,59 @@ export type Pagination = {
   totalCount: number;
   totalPages: number;
 };
+
+/** Value-label pairs for the item types tradeable via TRADE_BUY/TRADE_SELL. */
+export const tradeItemTypeOptions: { value: ItemType; label: string }[] = [
+  { value: ItemType.MOD, label: "Mod" },
+  { value: ItemType.RIVEN, label: "Riven" },
+  { value: ItemType.WARFRAME_PART, label: "Warframe Part" },
+  { value: ItemType.WEAPON_PART, label: "Weapon Part" },
+  { value: ItemType.LANDING_CRAFT_PART, label: "Landing Craft Part" },
+  { value: ItemType.COMPANION_PART, label: "Companion Part" },
+  { value: ItemType.ARCHWING_PART, label: "Archwing Part" },
+];
+
+/** Info about an individual wishlist item. */
+export type WishlistItem = {
+  id: string;
+  slug: string;
+  name: string;
+  itemType: ItemType;
+  setId: string | null;
+  alertPrice: number | null;
+};
+
+/** A named set of wishlist items tracked together. */
+export type ItemSet = {
+  id: string;
+  name: string;
+  items: WishlistItem[];
+};
+
+/** Form data for adding a standalone wishlist item, or one item within a set. */
+export type WishlistItemFormData = {
+  name: string;
+  slug: string;
+  itemType: ItemType;
+};
+
+/** Form data for creating a new item set with its initial items. */
+export type ItemSetFormData = {
+  name: string;
+  items: WishlistItemFormData[];
+};
+
+/** Live current price and 30-day average for a single item slug. */
+export type ItemPrice = {
+  currentPrice: number | null;
+  thirtyDayAverage: number | null;
+};
+
+/** A pending "buy" handoff from the Wishlist tab to the Accounting tab. */
+export type WishlistBuyRequest = {
+  requestId: string;
+  wishlistItemId: string;
+  itemName: string;
+  slug: string;
+  itemType: ItemType;
+};

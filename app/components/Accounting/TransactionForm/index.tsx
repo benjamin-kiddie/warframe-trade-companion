@@ -5,6 +5,8 @@ import {
   ItemType,
   Transaction,
   TransactionFormData as TransactionFormType,
+  WishlistBuyRequest,
+  tradeItemTypeOptions,
 } from "@/app/lib/types";
 import NumberInput from "@/app/components/Inputs/NumberInput";
 import Select from "@/app/components/Inputs/Select";
@@ -12,6 +14,8 @@ import Select from "@/app/components/Inputs/Select";
 type Props = {
   /** Transaction being edited, or null/undefined when adding a new one. */
   editingTransaction?: Transaction | null;
+  /** A "bought" wishlist item to pre-fill the form for, if any. */
+  draft?: WishlistBuyRequest | null;
   /** Submission callback. */
   onSubmit: (data: TransactionFormType) => void;
   /** Cancel callback. */
@@ -19,17 +23,19 @@ type Props = {
 };
 
 /**
- * Modal form for adding a new transaction, or editing an existing one.
- * The date a transaction occurred on cannot be edited once created.
+ * Modal form for adding a new transaction, editing an existing one, or
+ * logging the trade for a wishlist item marked bought. The date a
+ * transaction occurred on cannot be edited once created.
  */
 export default function TransactionForm({
   editingTransaction,
+  draft,
   onSubmit,
   onCancel,
 }: Props) {
   const isEditing = editingTransaction != null;
 
-  /** Build form state from the transaction being edited, or blank defaults. */
+  /** Build form state from the transaction being edited, a wishlist buy draft, or blank defaults. */
   const buildInitialFormData = (): TransactionFormType => {
     if (editingTransaction) {
       return {
@@ -40,6 +46,18 @@ export default function TransactionForm({
         slug: editingTransaction.slug,
         price: editingTransaction.price,
         notes: editingTransaction.notes,
+      };
+    }
+
+    if (draft) {
+      return {
+        date: new Date().toISOString().split("T")[0],
+        transactionType: TransactionType.TRADE_BUY,
+        itemType: draft.itemType,
+        itemName: draft.itemName,
+        slug: draft.slug,
+        price: 0,
+        notes: null,
       };
     }
 
@@ -64,17 +82,6 @@ export default function TransactionForm({
     { value: TransactionType.TRADE_BUY, label: "Trade Buy" },
     { value: TransactionType.MARKET_PURCHASE, label: "Market Purchase" },
     { value: TransactionType.PURCHASE, label: "Purchase" },
-  ];
-
-  /** Value-label pairs for traded item types. */
-  const tradeItemTypeOptions = [
-    { value: ItemType.MOD, label: "Mod" },
-    { value: ItemType.RIVEN, label: "Riven" },
-    { value: ItemType.WARFRAME_PART, label: "Warframe Part" },
-    { value: ItemType.WEAPON_PART, label: "Weapon Part" },
-    { value: ItemType.LANDING_CRAFT_PART, label: "Landing Craft Part" },
-    { value: ItemType.COMPANION_PART, label: "Companion Part" },
-    { value: ItemType.ARCHWING_PART, label: "Archwing Part" },
   ];
 
   /** Value-label pairs for purchased item types (only Platinum). */
@@ -225,7 +232,7 @@ export default function TransactionForm({
   return (
     <>
       <h3 className="text-lg font-semibold text-black dark:text-white mb-6">
-        {isEditing ? "Edit Transaction" : "Add Transaction"}
+        {isEditing ? "Edit Transaction" : draft ? "Log Trade" : "Add Transaction"}
       </h3>
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
