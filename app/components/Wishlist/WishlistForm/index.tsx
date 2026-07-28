@@ -66,6 +66,19 @@ export default function WishlistForm({
     setPendingItems(pendingItems.filter((_, i) => i !== index));
   };
 
+  /** Reset form to initial state. */
+  const resetForm = () => {
+    setActiveFormTab("individual");
+    setIndividualItemType(ItemType.WARFRAME_PART);
+    setIndividualItemName("");
+    setIndividualSlug(null);
+    setSetName("");
+    setStagingItemType(ItemType.WARFRAME_PART);
+    setStagingItemName("");
+    setStagingSlug(null);
+    setPendingItems([]);
+  };
+
   /** Handle submitting the individual item form. */
   const handleSubmitIndividual = (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +91,7 @@ export default function WishlistForm({
       slug: individualSlug,
       itemType: individualItemType,
     });
+    resetForm();
   };
 
   /** Handle submitting the set form. */
@@ -88,6 +102,13 @@ export default function WishlistForm({
     }
 
     onSubmitSet({ name: setName, items: pendingItems });
+    resetForm();
+  };
+
+  /** Handle form cancellation. */
+  const handleCancel = () => {
+    resetForm();
+    onCancel();
   };
 
   return (
@@ -153,7 +174,7 @@ export default function WishlistForm({
           <div className="flex gap-3 mt-6">
             <button
               type="button"
-              onClick={onCancel}
+              onClick={handleCancel}
               className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-zinc-700 rounded-md hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors"
             >
               Cancel
@@ -232,7 +253,7 @@ export default function WishlistForm({
           <div className="flex gap-3 mt-6">
             <button
               type="button"
-              onClick={onCancel}
+              onClick={handleCancel}
               className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-zinc-700 rounded-md hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors"
             >
               Cancel

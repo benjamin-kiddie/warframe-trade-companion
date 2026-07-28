@@ -26,6 +26,8 @@ type Props = {
   onBought: (item: WishlistItem) => void;
   /** Callback to discard a standalone item. */
   onDiscardItem: (item: WishlistItem) => void;
+  /** Callback to toggle sale notifications for an item. */
+  onToggleNotify: (item: WishlistItem) => void;
   /** Callback to discard a whole set. */
   onDiscardSet: (set: ItemSet) => void;
 };
@@ -47,6 +49,7 @@ export default function WishlistList({
   onAddClick,
   onBought,
   onDiscardItem,
+  onToggleNotify,
   onDiscardSet,
 }: Props) {
   const [expandedSetIds, setExpandedSetIds] = useState<Set<string>>(
@@ -113,6 +116,7 @@ export default function WishlistList({
                     pricesLoading={pricesLoading}
                     onBought={() => onBought(entry.item)}
                     onDiscard={() => onDiscardItem(entry.item)}
+                    onToggleNotify={() => onToggleNotify(entry.item)}
                   />
                 ) : (
                   <WishlistSetRow
@@ -124,6 +128,7 @@ export default function WishlistList({
                     onToggleExpand={() => toggleExpand(entry.set.id)}
                     onBoughtChild={onBought}
                     onDiscardChild={onDiscardItem}
+                    onToggleNotifyChild={onToggleNotify}
                     onDiscardSet={() => onDiscardSet(entry.set)}
                   />
                 ),

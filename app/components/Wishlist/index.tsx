@@ -198,6 +198,26 @@ export default function Wishlist({ onRequestBuy }: Props) {
     }
   };
 
+  /** Handle toggling sale notifications for a standalone or set item. */
+  const toggleNotify = async (item: WishlistItem) => {
+    try {
+      const response = await fetch(`/api/wishlist/items/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notifyOnSale: !item.notifyOnSale }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API returned ${response.status}`);
+      }
+
+      await fetchWishlist();
+    } catch (error) {
+      console.error("Error updating wishlist item:", error);
+      toast.error("Failed to update notification setting");
+    }
+  };
+
   /** Handle discarding a whole set. */
   const discardSet = async (set: ItemSet) => {
     try {
@@ -249,6 +269,7 @@ export default function Wishlist({ onRequestBuy }: Props) {
             onAddClick={() => setDialogOpen(true)}
             onBought={handleBought}
             onDiscardItem={discardItem}
+            onToggleNotify={toggleNotify}
             onDiscardSet={discardSet}
           />
         </div>

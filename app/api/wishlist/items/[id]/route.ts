@@ -2,6 +2,42 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/db";
 
 /**
+ * PATCH /api/wishlist/items/[id]
+ *
+ * Updates a wishlist item's notifyOnSale flag.
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
+    const body = await request.json();
+    const { notifyOnSale } = body;
+
+    if (typeof notifyOnSale !== "boolean") {
+      return NextResponse.json(
+        { error: "Missing required field: notifyOnSale must be a boolean" },
+        { status: 400 },
+      );
+    }
+
+    const item = await prisma.wishlistItem.update({
+      where: { id },
+      data: { notifyOnSale },
+    });
+
+    return NextResponse.json({ success: true, item });
+  } catch (error) {
+    console.error("Error updating wishlist item:", error);
+    return NextResponse.json(
+      { error: "Failed to update wishlist item" },
+      { status: 500 },
+    );
+  }
+}
+
+/**
  * DELETE /api/wishlist/items/[id]
  *
  * Discards one wishlist item (standalone or within a set), with no

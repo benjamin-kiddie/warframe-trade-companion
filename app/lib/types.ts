@@ -81,7 +81,7 @@ export type WishlistItem = {
   name: string;
   itemType: ItemType;
   setId: string | null;
-  alertPrice: number | null;
+  notifyOnSale: boolean;
 };
 
 /** A named set of wishlist items tracked together. */
@@ -104,10 +104,10 @@ export type ItemSetFormData = {
   items: WishlistItemFormData[];
 };
 
-/** Live current price and 30-day average for a single item slug. */
+/** Live current price and 30-day median for a single item slug. */
 export type ItemPrice = {
   currentPrice: number | null;
-  thirtyDayAverage: number | null;
+  thirtyDayMedian: number | null;
 };
 
 /** A pending "buy" handoff from the Wishlist tab to the Accounting tab. */

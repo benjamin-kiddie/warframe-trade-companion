@@ -57,7 +57,8 @@ model WishlistItem {
   name              String
   itemType          ItemType          // lets a "buy" prefill a Transaction
   setId             String?           // null = standalone top-level entry
-  alertPrice        Int?              // alerts trigger at/below this price
+  notifyOnSale      Boolean           @default(true)   // poll & notify when this item is discounted
+  saleNotifiedPrice Int?              // price we last notified at; null once price recovers above threshold
 
   set               ItemSet?          @relation(fields: [setId], references: [id], onDelete: Cascade)
 

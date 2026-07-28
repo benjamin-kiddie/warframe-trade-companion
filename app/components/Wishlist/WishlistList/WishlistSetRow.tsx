@@ -19,13 +19,15 @@ type Props = {
   onBoughtChild: (item: WishlistItem) => void;
   /** Callback to discard a child item. */
   onDiscardChild: (item: WishlistItem) => void;
+  /** Callback to toggle sale notifications for a child item. */
+  onToggleNotifyChild: (item: WishlistItem) => void;
   /** Callback to discard the whole set. */
   onDiscardSet: () => void;
 };
 
 /**
  * A set header row: chevron to expand/collapse, name, rolled-up collective
- * price vs. 30-day average across all its items, and a discard button.
+ * price vs. 30-day median across all its items, and a discard button.
  * Expands to render each child item as its own WishlistRow.
  */
 export default function WishlistSetRow({
@@ -36,14 +38,15 @@ export default function WishlistSetRow({
   onToggleExpand,
   onBoughtChild,
   onDiscardChild,
+  onToggleNotifyChild,
   onDiscardSet,
 }: Props) {
   const collectivePrice: ItemPrice = {
     currentPrice: sumKnownPrices(
       set.items.map((item) => prices[item.slug]?.currentPrice),
     ),
-    thirtyDayAverage: sumKnownPrices(
-      set.items.map((item) => prices[item.slug]?.thirtyDayAverage),
+    thirtyDayMedian: sumKnownPrices(
+      set.items.map((item) => prices[item.slug]?.thirtyDayMedian),
     ),
   };
 
@@ -93,13 +96,20 @@ export default function WishlistSetRow({
           {pricesLoading ? (
             <div className="h-4 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
           ) : (
-            <span
-              className={`text-sm font-mono ${getPriceColorClass(collectivePrice)}`}
-            >
-              {collectivePrice.currentPrice != null
-                ? `${collectivePrice.currentPrice}p`
-                : "—"}
-            </span>
+            <div className="flex flex-col items-end leading-tight">
+              <span
+                className={`text-sm font-mono ${getPriceColorClass(collectivePrice)}`}
+              >
+                {collectivePrice.currentPrice != null
+                  ? `${collectivePrice.currentPrice}p`
+                  : "—"}
+              </span>
+              <span className="text-xs font-mono text-gray-400 dark:text-gray-500">
+                {collectivePrice.thirtyDayMedian != null
+                  ? `med ${Math.round(collectivePrice.thirtyDayMedian)}p`
+                  : "—"}
+              </span>
+            </div>
           )}
           <button
             type="button"
@@ -133,6 +143,7 @@ export default function WishlistSetRow({
             nested
             onBought={() => onBoughtChild(item)}
             onDiscard={() => onDiscardChild(item)}
+            onToggleNotify={() => onToggleNotifyChild(item)}
           />
         ))}
     </>

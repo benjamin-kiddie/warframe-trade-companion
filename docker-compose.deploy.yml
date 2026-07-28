@@ -11,6 +11,9 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_URL=file:./data/database.db
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+      - WISHLIST_POLL_INTERVAL_MS=${WISHLIST_POLL_INTERVAL_MS:-180000}
+      - WISHLIST_SALE_THRESHOLD_PERCENT=${WISHLIST_SALE_THRESHOLD_PERCENT:-10}
     volumes:
       # Mount SQLite database directory for persistence
       - db-data:/app/data

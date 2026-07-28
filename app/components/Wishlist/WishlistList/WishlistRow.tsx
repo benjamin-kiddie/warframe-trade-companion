@@ -16,10 +16,12 @@ type Props = {
   onBought: () => void;
   /** Callback to discard this item without buying it. */
   onDiscard: () => void;
+  /** Callback to toggle sale notifications for this item. */
+  onToggleNotify: () => void;
 };
 
 /**
- * A single wishlist row: name, live price colored vs. its 30-day average,
+ * A single wishlist row: name, live price colored vs. its 30-day median,
  * a "bought" button, and a discard button.
  */
 export default function WishlistRow({
@@ -29,6 +31,7 @@ export default function WishlistRow({
   nested = false,
   onBought,
   onDiscard,
+  onToggleNotify,
 }: Props) {
   /** Handle discarding this item, after confirming with the user. */
   const handleDiscard = () => {
@@ -54,10 +57,45 @@ export default function WishlistRow({
         {pricesLoading ? (
           <div className="h-4 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
         ) : (
-          <span className={`text-sm font-mono ${getPriceColorClass(price)}`}>
-            {price?.currentPrice != null ? `${price.currentPrice}p` : "—"}
-          </span>
+          <div className="flex flex-col items-end leading-tight">
+            <span className={`text-sm font-mono ${getPriceColorClass(price)}`}>
+              {price?.currentPrice != null ? `${price.currentPrice}p` : "—"}
+            </span>
+            <span className="text-xs font-mono text-gray-400 dark:text-gray-500">
+              {price?.thirtyDayMedian != null
+                ? `med ${Math.round(price.thirtyDayMedian)}p`
+                : "—"}
+            </span>
+          </div>
         )}
+        <button
+          type="button"
+          onClick={onToggleNotify}
+          aria-label={
+            item.notifyOnSale
+              ? `Disable sale notifications for "${item.name}"`
+              : `Enable sale notifications for "${item.name}"`
+          }
+          className={`p-1 rounded hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors ${
+            item.notifyOnSale
+              ? "text-amber-500 dark:text-amber-400"
+              : "text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400"
+          }`}
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+            />
+          </svg>
+        </button>
         <button
           type="button"
           onClick={onBought}

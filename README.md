@@ -9,7 +9,7 @@ earned and spent, transaction history, and a live-priced trading wishlist.
   purchases; see bought vs. traded platinum balances at a glance; browse,
   edit, and delete paginated transaction history.
 - **Wishlist** — track items and sets you want to trade for, with live
-  current price and 30-day average pulled from warframe.market (colored to
+  current price and 30-day median pulled from warframe.market (colored to
   flag good buy timing). Expand a set to see its items and their combined
   price. Marking an item bought hands off to Accounting with the trade
   pre-filled; discarding just removes it. Also shows total wishlist cost
@@ -83,21 +83,21 @@ docker compose up -d
 
 ### Other scripts
 
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Start the dev server (Turbopack) |
-| `npm run build` | Production build |
-| `npm run start` | Start a production build |
-| `npm run lint` | Run ESLint |
+| Command         | Description                      |
+| --------------- | -------------------------------- |
+| `npm run dev`   | Start the dev server (Turbopack) |
+| `npm run build` | Production build                 |
+| `npm run start` | Start a production build         |
+| `npm run lint`  | Run ESLint                       |
 
 ## Environment variables
 
-| Variable | Description | Example |
-| --- | --- | --- |
+| Variable       | Description                             | Example                   |
+| -------------- | --------------------------------------- | ------------------------- |
 | `DATABASE_URL` | SQLite connection string used by Prisma | `file:./data/database.db` |
-| `NODE_ENV` | Node environment | `production` |
-| `PORT` | Port the server listens on | `3000` |
-| `HOSTNAME` | Host the server binds to | `0.0.0.0` |
+| `NODE_ENV`     | Node environment                        | `production`              |
+| `PORT`         | Port the server listens on              | `3000`                    |
+| `HOSTNAME`     | Host the server binds to                | `0.0.0.0`                 |
 
 ## Data persistence
 
