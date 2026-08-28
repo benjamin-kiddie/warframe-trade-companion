@@ -13,12 +13,10 @@
 # testing
 /coverage
 
-# next.js
-/.next/
+# build output
 /out/
-
-# production
-/build
+/dist-electron/
+/dist/
 
 # misc
 .DS_Store
@@ -30,16 +28,14 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (.env.example is the documented template and stays tracked)
 .env*
-
-# vercel
-.vercel
+!.env.example
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
 
 /app/generated/prisma
+/electron/generated/prisma
 /data/
 *.sqlite

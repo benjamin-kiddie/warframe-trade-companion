@@ -61,13 +61,8 @@ export default function ItemAutocomplete({
 
     setLoading(true);
     try {
-      const response = await fetch(
-        `/api/items?query=${encodeURIComponent(query)}`,
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setSearchResults(data.items.slice(0, 5));
-      }
+      const items = await window.api.items.search(query);
+      setSearchResults(items.slice(0, 5));
     } catch (error) {
       console.error("Error searching items:", error);
     } finally {

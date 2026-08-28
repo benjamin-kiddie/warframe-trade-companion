@@ -6,6 +6,12 @@ generator client {
   output   = "../app/generated/prisma"
 }
 
+generator electronClient {
+  provider     = "prisma-client"
+  output       = "../electron/generated/prisma"
+  moduleFormat = "cjs"
+}
+
 datasource db {
   provider = "sqlite"
 }

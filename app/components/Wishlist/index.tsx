@@ -57,12 +57,7 @@ export default function Wishlist({ onRequestBuy }: Props) {
   const fetchWishlist = async () => {
     try {
       setEntriesLoading(true);
-      const response = await fetch("/api/wishlist");
-      if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await window.api.wishlist.get();
       const fetchedItems: WishlistItem[] = data.items || [];
       const fetchedSets: ItemSet[] = data.sets || [];
       setItems(fetchedItems);
@@ -81,12 +76,7 @@ export default function Wishlist({ onRequestBuy }: Props) {
   /** Handle fetching the traded platinum balance from the API. */
   const fetchBalance = async () => {
     try {
-      const response = await fetch("/api/transactions/balance");
-      if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await window.api.transactions.balance();
       setTradedBalance(data.tradedBalance || 0);
     } catch (error) {
       console.error("Error fetching balance:", error);
@@ -115,18 +105,8 @@ export default function Wishlist({ onRequestBuy }: Props) {
 
     try {
       setPricesLoading(true);
-      const response = await fetch("/api/wishlist/prices", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slugs }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
-      }
-
-      const data = await response.json();
-      setPrices(data.prices || {});
+      const prices = await window.api.wishlist.fetchPrices(slugs);
+      setPrices(prices || {});
     } catch (error) {
       console.error("Error fetching wishlist prices:", error);
       toast.error("Failed to load current prices");
@@ -138,16 +118,7 @@ export default function Wishlist({ onRequestBuy }: Props) {
   /** Handle adding a new standalone wishlist item. */
   const submitItem = async (data: WishlistItemFormData) => {
     try {
-      const response = await fetch("/api/wishlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
-      }
-
+      await window.api.wishlist.createItem(data);
       setDialogOpen(false);
       toast.success("Item added to wishlist");
       await fetchWishlist();
@@ -160,16 +131,7 @@ export default function Wishlist({ onRequestBuy }: Props) {
   /** Handle adding a new set with its items. */
   const submitSet = async (data: ItemSetFormData) => {
     try {
-      const response = await fetch("/api/wishlist/sets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
-      }
-
+      await window.api.wishlist.createSet(data);
       setDialogOpen(false);
       toast.success("Set added to wishlist");
       await fetchWishlist();
@@ -182,14 +144,7 @@ export default function Wishlist({ onRequestBuy }: Props) {
   /** Handle discarding a standalone or set item, with no transaction created. */
   const discardItem = async (item: WishlistItem) => {
     try {
-      const response = await fetch(`/api/wishlist/items/${item.id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
-      }
-
+      await window.api.wishlist.deleteItem(item.id);
       toast.success("Removed from wishlist");
       await fetchWishlist();
     } catch (error) {
@@ -201,16 +156,9 @@ export default function Wishlist({ onRequestBuy }: Props) {
   /** Handle toggling sale notifications for a standalone or set item. */
   const toggleNotify = async (item: WishlistItem) => {
     try {
-      const response = await fetch(`/api/wishlist/items/${item.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notifyOnSale: !item.notifyOnSale }),
+      await window.api.wishlist.updateItem(item.id, {
+        notifyOnSale: !item.notifyOnSale,
       });
-
-      if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
-      }
-
       await fetchWishlist();
     } catch (error) {
       console.error("Error updating wishlist item:", error);
@@ -221,14 +169,7 @@ export default function Wishlist({ onRequestBuy }: Props) {
   /** Handle discarding a whole set. */
   const discardSet = async (set: ItemSet) => {
     try {
-      const response = await fetch(`/api/wishlist/sets/${set.id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
-      }
-
+      await window.api.wishlist.deleteSet(set.id);
       toast.success("Set removed from wishlist");
       await fetchWishlist();
     } catch (error) {

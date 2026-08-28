@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import Accounting from "@/app/components/Accounting";
 import Wishlist from "@/app/components/Wishlist";
@@ -8,7 +6,7 @@ import { Toaster } from "sonner";
 
 type TabType = "accounting" | "wishlist";
 
-export default function Home() {
+export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>("accounting");
   const [pendingBuyRequest, setPendingBuyRequest] =
     useState<WishlistBuyRequest | null>(null);

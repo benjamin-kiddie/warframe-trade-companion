@@ -1,0 +1,33 @@
+appId: com.benjaminkiddie.warframetradecompanion
+productName: Warframe Trade Companion
+directories:
+  output: dist
+  buildResources: build
+
+# Prisma's CLI spawns its own native query/migration-engine binaries at runtime, which can't
+# execute from inside an asar archive — so packaging leaves everything as plain files instead.
+asar: false
+
+# Explicit allowlist — without this, electron-builder would otherwise sweep in .env (a live
+# secret), data/ (dev databases), and all raw TS/source files, none of which the app needs to run.
+files:
+  - out/**/*
+  - dist-electron/**/*
+  - package.json
+  - prisma/schema.prisma
+  - prisma/migrations/**/*
+  - prisma.config.mjs
+
+mac:
+  category: public.app-category.utilities
+  target:
+    - dmg
+    - zip
+win:
+  target:
+    - nsis
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Utility

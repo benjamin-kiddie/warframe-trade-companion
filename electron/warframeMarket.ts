@@ -59,12 +59,14 @@ export async function fetchCurrentPrice(slug: string): Promise<number | null> {
 }
 
 /**
- * Fetches the 30-day median price for an item. Median is used instead of a
- * mean so a handful of unusually high/low closed trades don't skew the
- * baseline used for sale comparisons.
+ * Fetches the median closed-trade price for an item, over the last `days`
+ * days (or the full ~90-day window warframe.market returns, if omitted).
+ * Median is used instead of a mean so a handful of unusually high/low closed
+ * trades don't skew the baseline used for sale comparisons.
  */
-export async function fetchThirtyDayMedian(
+export async function fetchMedianPrice(
   slug: string,
+  days?: number,
 ): Promise<number | null> {
   try {
     const response = await fetch(
@@ -75,7 +77,8 @@ export async function fetchThirtyDayMedian(
     }
 
     const data: WarframeMarketStatisticsResponse = await response.json();
-    const recentDays = data.payload.statistics_closed["90days"].slice(-30);
+    const allDays = data.payload.statistics_closed["90days"];
+    const recentDays = days ? allDays.slice(-days) : allDays;
 
     if (recentDays.length === 0) {
       return null;

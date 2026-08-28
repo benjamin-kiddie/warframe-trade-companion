@@ -2,32 +2,44 @@
   "name": "warframe-trade-companion",
   "version": "0.1.0",
   "private": true,
+  "main": "dist-electron/main.js",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "build:renderer": "tsc -p tsconfig.json && vite build",
+    "build:electron": "tsc -p electron/tsconfig.json",
+    "electron:dev": "npm run build:electron && electron .",
+    "electron:build": "npm run build:renderer && npm run build:electron && electron-builder",
+    "postinstall": "electron-builder install-app-deps",
     "lint": "eslint"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.4.0",
     "@prisma/client": "^7.4.0",
-    "@wfcd/items": "^1.1272.119",
-    "better-sqlite3": "^12.6.2",
+    "better-sqlite3": "^13.0.3",
     "dotenv": "^17.3.1",
-    "next": "16.1.6",
-    "prisma": "^7.4.0",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "sonner": "^2.0.7"
+    "prisma": "^7.4.0"
+  },
+  "overrides": {
+    "better-sqlite3": "^13.0.3"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
+    "@eslint/js": "^9",
+    "@tailwindcss/vite": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5",
+    "electron": "^44.0.0",
+    "electron-builder": "^26.15.3",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
+    "eslint-plugin-react-hooks": "^5",
+    "eslint-plugin-react-refresh": "^0.4",
+    "globals": "^15",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "sonner": "^2.0.7",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "typescript-eslint": "^8",
+    "vite": "^7"
   }
 }

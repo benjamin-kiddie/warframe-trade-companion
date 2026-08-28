@@ -19,93 +19,76 @@ earned and spent, transaction history, and a live-priced trading wishlist.
 
 ## Tech stack
 
-- [Next.js](https://nextjs.org) 16 (App Router, Turbopack) + React 19 +
-  TypeScript
+- [Electron](https://www.electronjs.org) desktop shell
+- [Vite](https://vite.dev) + React 19 + TypeScript — statically built UI,
+  rendered inside the Electron window
 - [Tailwind CSS](https://tailwindcss.com) v4
 - [Prisma](https://www.prisma.io) 7 ORM over SQLite (via the
-  `better-sqlite3` adapter)
-- Docker for packaging/deployment
+  `better-sqlite3` adapter), queried directly from Electron's main process
+  over IPC
 
-## Running it (Docker, no source needed)
-
-This pulls the published image and persists its SQLite database in a Docker
-volume, so it survives future updates.
-
-1. Download `docker-compose.deploy.yml` from this repo:
-   ```
-   curl -O https://raw.githubusercontent.com/benjamin-kiddie/WarframeTradeCompanion/main/docker-compose.deploy.yml
-   ```
-2. In the same folder, run:
-   ```
-   docker compose -f docker-compose.deploy.yml pull
-   docker compose -f docker-compose.deploy.yml up -d
-   ```
-3. Open [http://localhost:3000](http://localhost:3000).
-
-To update later, re-run those same two commands — the `db-data` volume is
-untouched by pulling a new image.
-
-## Building the image yourself
-
-If you're working on the app and want to build/push the image rather than
-just run the published one, use `docker-compose.yml` (which builds from the
-local `Dockerfile`) instead:
-
-```
-docker compose build
-docker compose push   # publishes benjaminkiddie/warframe-trade-companion:latest
-docker compose up -d
-```
-
-## Local development (without Docker)
+## Development
 
 1. Install dependencies:
    ```
    npm install
    ```
-2. Copy `.env.example` to `.env` and adjust as needed:
+   > Requires Node 22+ (see `.nvmrc`) — some dependencies ship ESM-only
+   > builds that fail under `require()` on Node 20.
+2. _(Optional)_ Copy `.env.example` to `.env` and fill in `DISCORD_WEBHOOK_URL`
+   to enable wishlist sale notifications (native desktop notification +
+   Discord webhook). Without it, notifications are just disabled.
    ```
    cp .env.example .env
    ```
-3. Set up the database:
+3. Run the app:
    ```
-   npx prisma migrate dev
+   npm run electron:dev
    ```
-   > Requires Node 22+. Prisma's CLI currently fails on Node 20 with an
-   > `ERR_REQUIRE_ESM` error from one of its dependencies. This only
-   > affects Prisma CLI commands (`migrate`, `generate`, etc.) — the app
-   > itself runs fine on Node 20+.
-4. Start the dev server:
-   ```
-   npm run dev
-   ```
-5. Open [http://localhost:3000](http://localhost:3000).
+   This builds the static UI export, compiles the Electron main process,
+   and launches the app. On first launch it creates its SQLite database and
+   applies migrations automatically — no manual database setup needed.
 
 ### Other scripts
 
-| Command         | Description                      |
-| --------------- | -------------------------------- |
-| `npm run dev`   | Start the dev server (Turbopack) |
-| `npm run build` | Production build                 |
-| `npm run start` | Start a production build         |
-| `npm run lint`  | Run ESLint                       |
+| Command                  | Description                                             |
+| ------------------------- | -------------------------------------------------------- |
+| `npm run electron:dev`   | Build and launch the app                                |
+| `npm run electron:build` | Build a distributable via electron-builder              |
+| `npm run build:renderer` | Build the static UI only                                |
+| `npm run build:electron` | Compile the Electron main/preload process only           |
+| `npm run lint`            | Run ESLint                                              |
 
-## Environment variables
+## Packaging
 
-| Variable       | Description                             | Example                   |
-| -------------- | --------------------------------------- | ------------------------- |
-| `DATABASE_URL` | SQLite connection string used by Prisma | `file:./data/database.db` |
-| `NODE_ENV`     | Node environment                        | `production`              |
-| `PORT`         | Port the server listens on              | `3000`                    |
-| `HOSTNAME`     | Host the server binds to                | `0.0.0.0`                 |
+```
+npm run electron:build
+```
+
+Builds the UI, compiles the Electron main process, and runs `electron-builder`
+to produce a distributable in `dist/` (`.dmg`/`.zip` on macOS, `.exe` via NSIS
+on Windows, `.AppImage`/`.deb` on Linux — see `electron-builder.yml`).
+
+Native modules (`better-sqlite3`) mean this must run on the OS/architecture
+you're packaging for — `node-gyp` can't cross-compile from, say, macOS to
+Windows. To produce a Windows build, run the same two commands
+(`npm install`, `npm run electron:build`) directly on a Windows machine. If
+`node-gyp` fails there, it usually means the native build toolchain isn't
+installed — either install Visual Studio Build Tools (the "Desktop
+development with C++" workload) or run
+`npm install --global windows-build-tools`.
+
+macOS builds produced this way are unsigned (no Apple Developer ID
+configured) — fine for running locally, but launching one on another Mac will
+trigger a Gatekeeper warning (right-click → Open bypasses it).
 
 ## Data persistence
 
-The SQLite database lives at whatever path `DATABASE_URL` points to. In
-Docker, this is `/app/data/database.db`, backed by the named volume
-`db-data` — it's independent of the image, so pulling/rebuilding a new
-version never touches existing data. Schema changes are applied on startup
-via `prisma migrate deploy`, which only runs forward migrations and never
+The SQLite database lives in Electron's per-OS `userData` directory (e.g.
+`~/Library/Application Support/warframe-trade-companion/database.db` on
+macOS) — independent of the app bundle, so updating the app never touches
+existing data. Schema changes are applied on launch via
+`prisma migrate deploy`, which only runs forward migrations and never
 resets data.
 
 ## License

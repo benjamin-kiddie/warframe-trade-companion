@@ -73,12 +73,7 @@ export default function Accounting({
   const fetchTransactions = async (page: number) => {
     try {
       setTransactionsLoading(true);
-      const response = await fetch(`/api/transactions?limit=10&page=${page}`);
-      if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await window.api.transactions.list({ page, limit: 10 });
       setTransactions(data.transactions || []);
       setTransactionsPagination(data.pagination);
     } catch (error) {
@@ -93,12 +88,7 @@ export default function Accounting({
   /** Handle fetching balances from the API. */
   const fetchBalances = async () => {
     try {
-      const response = await fetch("/api/transactions/balance");
-      if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await window.api.transactions.balance();
       setBalances(data);
     } catch (error) {
       console.error("Error fetching balances:", error);
@@ -131,23 +121,12 @@ export default function Accounting({
   /** Handle adding, editing, or buying (from the wishlist) a transaction via the API. */
   const submitTransaction = async (data: TransactionFormData) => {
     try {
-      const url = editingTransaction
-        ? `/api/transactions/${editingTransaction.id}`
-        : activeBuyRequest
-          ? `/api/wishlist/items/${activeBuyRequest.wishlistItemId}/buy`
-          : "/api/transactions";
-      const method = editingTransaction ? "PATCH" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
+      if (editingTransaction) {
+        await window.api.transactions.update(editingTransaction.id, data);
+      } else if (activeBuyRequest) {
+        await window.api.wishlist.buyItem(activeBuyRequest.wishlistItemId, data);
+      } else {
+        await window.api.transactions.create(data);
       }
 
       const wasEditing = editingTransaction !== null;
@@ -170,14 +149,7 @@ export default function Accounting({
   /** Handle deleting a transaction via the API. */
   const deleteTransaction = async (id: string) => {
     try {
-      const response = await fetch(`/api/transactions/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
-      }
-
+      await window.api.transactions.delete(id);
       toast.success("Transaction deleted");
       await fetchTransactions(transactionsPagination?.page || 1);
       await fetchBalances();
